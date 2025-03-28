@@ -12,6 +12,7 @@ local parameterized_tests = require("neotest-jest.parameterized-tests")
 ---@field env? table<string, string>|fun(): table<string, string>
 ---@field cwd? string|fun(): string
 ---@field strategy_config? table<string, unknown>|fun(): table<string, unknown>
+---@field test_file_categories? string[]
 
 ---@type neotest.Adapter
 local adapter = { name = "neotest-jest" }
@@ -99,6 +100,7 @@ end
 
 local getJestCommand = jest_util.getJestCommand
 local getJestConfig = jest_util.getJestConfig
+local test_file_categories = { "spec", "e2e%-spec", "test", "unit", "regression", "integration" }
 
 ---@param file_path? string
 ---@return boolean
@@ -112,7 +114,7 @@ function adapter.is_test_file(file_path)
     is_test_file = true
   end
 
-  for _, x in ipairs({ "spec", "e2e%-spec", "test", "unit", "regression", "integration" }) do
+  for _, x in ipairs(test_file_categories) do
     for _, ext in ipairs({ "js", "jsx", "coffee", "ts", "tsx" }) do
       if string.match(file_path, "%." .. x .. "%." .. ext .. "$") then
         is_test_file = true
@@ -526,6 +528,10 @@ setmetatable(adapter, {
 
     if opts.jest_test_discovery then
       adapter.jest_test_discovery = true
+    end
+
+    if opts.test_file_categories then
+      test_file_categories = opts.test_file_categories
     end
 
     return adapter
